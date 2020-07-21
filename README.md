@@ -14,7 +14,7 @@ If your account contains less than 9 cards, it will be padded using the 27 start
 
 Once you have your account set up, you can basically just run `idolsched` from a command line to play around with it. It doesn't accept any argument to specify a song or anything because it currently only supports one song, an extremely stripped down version of No Exit Orion (Advanced difficulty), since I nor anyone else has datamined the kind of song info the program needs yet.
 
-If the program is giving you bad results, trying `idolsched -n100000` or `idolsched -n1000000`, etc, to increase its runtime. If those do not help, let Katrina know I guess.
+If the program is giving you bad results, try `idolsched -n100000` or `idolsched -n1000000`, etc, to increase its runtime. If those do not help, let Katrina know I guess.
 
 Most of the other options are boring technical stuff; you can learn about them with `idolsched --help`.
 
@@ -46,7 +46,7 @@ The current algorithm is a form of simulated annealing, treating schedules as st
 The "moves" allowed to transform a schedule are:
 - exchanging a card from the green strategy with a card from one of the other strategies (this move is included instead of exchanging any two cards since exchanging two backliners has no significance for autoplay, currently the only thing idolsched is good for)
 - replacing any card on the team with a card in the user's album that is not on the team
-- replacing any accessory on the team with a card in the user's accessory inventory not on the team
+- replacing any accessory on the team with an accessory in the user's accessory inventory not on the team
 - removing any accessory on the team (as you might expect, this move tends to produce bad results and will likely be removed in the future)
 
 As an additional hack, if a live simulation ends by running out of stamina, the reported voltage is the voltage prior to running out of stamina divided by 10,000. This is not part of the annealer's code, but it is essential to the annealer's operation: searching starts with a randomized team, which usually dies quickly, and if every such team reports 0 voltage the annealer has no information it can use to find a usable team.
