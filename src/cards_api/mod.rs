@@ -17,20 +17,20 @@ pub mod enums {
     pub use super::misc_enums::*;
 }
 
-pub async fn get_cards(cfg: &Cfg, mut id_list: Vec<u32>) -> Result<HashMap<u32, json_card::JsonCard>, Error> {
+pub async fn get_cards(cfg: &Cfg, mut ordinal_list: Vec<u32>) -> Result<HashMap<u32, json_card::JsonCard>, Error> {
     let mut cachedata = cache::load_cache(cfg)?;
     let mut output_cards = HashMap::new();
-    id_list.retain(|id| if let Some(card_json) = cachedata.cards.get(&id) {
-        output_cards.insert(*id, card_json.clone());
+    ordinal_list.retain(|ordinal| if let Some(card_json) = cachedata.cards.get(&ordinal) {
+        output_cards.insert(*ordinal, card_json.clone());
         false
     } else {
         true
     });
-    if id_list.len() != 0 {
+    if ordinal_list.len() != 0 {
         println!("Requesting card data from {}", cfg.provider);
         let client = reqwest::Client::new();
         let mut response: json_card::JsonCardRq = {
-            let res = client.get(&(cfg.provider.clone() + "id/" + &id_list_name(&id_list)))
+            let res = client.get(&(cfg.provider.clone() + "ordinal/" + &ordinal_list_name(&ordinal_list)))
                 .send().await?;
             let ra = res.remote_addr();
             let status = res.status();
@@ -45,20 +45,20 @@ pub async fn get_cards(cfg: &Cfg, mut id_list: Vec<u32>) -> Result<HashMap<u32, 
             }
         };
         for card in response.result.drain(..) {
-            let id = card.id;
-            output_cards.insert(id, card.clone());
-            cachedata.cards.insert(id, card);
+            let ordinal = card.ordinal;
+            output_cards.insert(ordinal, card.clone());
+            cachedata.cards.insert(ordinal, card);
         }
         cache::save_cache(cfg, &cachedata)?;
     }
     Ok(output_cards)
 }
 
-fn id_list_name(id_list: &Vec<u32>) -> String {
-    let mut s = String::with_capacity(10 * id_list.len() + 4);
-    for i in 0 .. id_list.len() {
-        s += &format!("{}", id_list[i]);
-        if i + 1 != id_list.len() {
+fn ordinal_list_name(ordinal_list: &Vec<u32>) -> String {
+    let mut s = String::with_capacity(10 * ordinal_list.len() + 4);
+    for i in 0 .. ordinal_list.len() {
+        s += &format!("{}", ordinal_list[i]);
+        if i + 1 != ordinal_list.len() {
             s.push(',');
         } else {
             s += ".json";

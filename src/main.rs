@@ -22,15 +22,15 @@ use std::path::PathBuf;
 async fn main() -> Result<(), error::Error> {
     if let Some(settings) = get_configuration()? {
         let acct = get_acct(&settings.acct_path)?;
-        let card_ids = acct.card_ids();
-        let card_details = cards_api::get_cards(&settings.api_cfg, card_ids).await?;
+        let card_ordinals = acct.card_ordinals();
+        let card_details = cards_api::get_cards(&settings.api_cfg, card_ordinals).await?;
         let mut album = Vec::new();
         let mut struggle_map: HashMap<u32, sim::acct_info::CardInfo> = HashMap::new();
         for card_inf in acct.cards.iter() {
-            struggle_map.insert(card_inf.id, *card_inf);
+            struggle_map.insert(card_inf.ordinal, *card_inf);
         }
-        for (id, jcard) in card_details.iter() {
-            let card_inf = struggle_map.get(id).unwrap();
+        for (ordinal, jcard) in card_details.iter() {
+            let card_inf = struggle_map.get(ordinal).unwrap();
             let card = sim::card::Card::instantiate_json(&jcard, card_inf.lb, card_inf.fed);
             album.push(card);
         }

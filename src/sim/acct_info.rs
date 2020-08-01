@@ -17,31 +17,25 @@ impl AcctInfo {
     }
 
     fn add_r1s(&mut self) {
-        let r1_ids = &[
-            10_001_10_01, 10_002_10_01, 10_003_10_01,
-            10_004_10_01, 10_005_10_01, 10_006_10_01,
-            10_007_10_01, 10_008_10_01, 10_009_10_01,
-            10_101_10_01, 10_102_10_01, 10_103_10_01,
-            10_104_10_01, 10_105_10_01, 10_106_10_01,
-            10_107_10_01, 10_108_10_01, 10_109_10_01,
-            10_201_10_01, 10_202_10_01, 10_203_10_01,
-            10_204_10_01, 10_205_10_01, 10_206_10_01,
-            10_207_10_01, 10_208_10_01, 10_209_10_01
+        let r1_ordinals = &[
+            1,  5,  9, 13, 17, 21, 25, 29, 33,
+            37, 41, 45, 49, 53, 57, 61, 65, 69,
+            73, 76, 79, 82, 85, 88, 91, 94, 97,
         ];
-        'r1s: for &id in r1_ids {
+        'r1s: for &ordinal in r1_ordinals {
             for card in self.cards.iter() {
-                if card.id == id {
+                if card.ordinal == ordinal {
                     continue 'r1s;
                 }
             }
-            self.cards.push(CardInfo { id, lb: 0, fed: false })
+            self.cards.push(CardInfo { ordinal, lb: 0, fed: false })
         }
     }
 
-    pub fn card_ids(&self) -> Vec<u32> {
+    pub fn card_ordinals(&self) -> Vec<u32> {
         let mut v = Vec::new();
         for card in self.cards.iter() {
-            v.push(card.id);
+            v.push(card.ordinal);
         }
         v
     }
@@ -63,7 +57,7 @@ impl Default for BondInfo {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub struct CardInfo {
-    pub id: u32,
+    pub ordinal: u32,
     pub lb: u8,
     pub fed: bool,
 }
