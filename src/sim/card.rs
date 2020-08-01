@@ -4,7 +4,7 @@ use crate::cards_api::json_card::JsonCard;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Card {
-    pub id: u32, // mainly used for display
+    pub ordinal: u32, // mainly used for display
     pub member: Idol,
     pub rarity: Rarity,
     pub attribute: Attribute,
@@ -49,7 +49,7 @@ impl Card {
             .collect();
         let skill_mask = mask_for(jc);
         Card {
-            id: jc.id,
+            ordinal: jc.ordinal,
             member: jc.member,
             rarity: jc.rarity,
             attribute: jc.attribute,
@@ -69,15 +69,7 @@ impl Card {
             Rarity::Sr => "SR",
             Rarity::Ur => "UR",
         };
-        let src = match self.id / 01_000_00_00 {
-            10 => "initial",
-            20 => "fes",
-            30 => "gacha",
-            40 => "event reward",
-            _ => "unknown"
-        };
-        let n = self.id % 100;
-        format!("{:?} {} {} #{}", self.member, src, rarity, n)
+        format!("{:>3} {} {:?}", self.ordinal, rarity, self.member)
     }
 }
 
