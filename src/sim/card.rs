@@ -12,8 +12,8 @@ pub struct Card {
     pub role_effect: RoleEffect,
     pub level: u32,
     pub appeal: u32,
-    pub technique: u32,
     pub stamina: u32,
+    pub technique: u32,
     pub crit_rate_bonus: bool,
     pub skill_mask: u64,
     pub tap_skill: Skill,
@@ -23,7 +23,7 @@ pub struct Card {
 impl Card {
     pub fn instantiate_json(jc: &JsonCard, lb: u8, fed: bool) -> Card {
         use Rarity::*;
-        let [level, appeal, technique, stamina] = jc.stats_with(None, fed, lb);
+        let [level, appeal, stamina, technique] = jc.stats_with(None, fed, lb);
         let (tap_lv, etc_lv) = if !fed { (1, 1) } else {
             match (jc.rarity, lb) {
                 (_, 0)  => (3, 3),
@@ -59,7 +59,7 @@ impl Card {
             skill_mask,
             tap_skill,
             etc_skills,
-            level, appeal, technique, stamina,
+            level, appeal, stamina, technique,
         }
     }
 
