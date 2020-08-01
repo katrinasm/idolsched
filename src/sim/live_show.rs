@@ -59,6 +59,7 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
             status.shield = 0.0;
             damage -= status.shield;
         } else {
+            damage = 0.0;
             status.shield -= damage;
         }
         status.stam = (status.stam - damage).max(0.0);
