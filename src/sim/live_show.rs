@@ -55,7 +55,7 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
         status.voltage += volts.min(stat_list.cap_tap[card_pos]);
 
         let in_damage = dpn * stat_list.mod_gd[status.strat];
-        let (damage, nshield) = ((status.shield - in_damage).max(0.0), (in_damage - status.shield).max(0.0));
+        let (nshield, damage) = ((status.shield - in_damage).max(0.0), (in_damage - status.shield).max(0.0));
         status.shield = nshield;
         status.stam = (status.stam - damage).max(0.0);
         if song.lose_at_death && status.stam == 0.0 {
