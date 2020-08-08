@@ -6,12 +6,12 @@ use crate::cards_api::enums::SkillEffectType;
 // target masks are:
 // 63                             32
 // ----~~~~----~~~~----~~~~----~~~~
-// -----NNNNNNNNNAAAAAAAAAMMMMMMMMM
+// ----NNNNNNNNNNAAAAAAAAAMMMMMMMMM
 // 31                             0
 // ----~~~~----~~~~----~~~~----~~~~
 // ----kpgv-xenacps-------876543210
 // where:
-// N, A, M are the niji/aqours/μ’s members, in order, honoka ... rina
+// N, A, M are the niji/aqours/μ’s members, in order, honoka ... shioriko
 // v, g, p, k: vo, gd, sp, sk
 // xenacps: attributes (x neutral)
 // digits: formation positions 0...8
@@ -242,6 +242,7 @@ fn year_mask_m(member: Idol) -> u64 {
         Setsuna  => SECOND_YEARS,
         Emma     => THIRD_YEARS,
         Rina     => FIRST_YEARS,
+        Shioriko => FIRST_YEARS,
     }
 }
 
@@ -286,6 +287,7 @@ fn subunit_mask_m(member: Idol) -> u64 {
         Setsuna  => AZUNA,
         Emma     => QU4RTZ,
         Rina     => QU4RTZ,
+        Shioriko => 0,
     }
 }
 
@@ -319,6 +321,7 @@ fn member_ofs(member: Idol) -> u8 {
         Setsuna  => 24,
         Emma     => 25,
         Rina     => 26,
+        Shioriko => 27,
     }
 }
 

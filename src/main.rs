@@ -4,9 +4,11 @@ mod sim;
 mod anneal;
 mod error;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use rand::SeedableRng;
 use rand::rngs::SmallRng;
+
+use cards_api::Monicker;
 
 pub use error::Error;
 
@@ -23,16 +25,18 @@ async fn main() -> Result<(), error::Error> {
     if let Some(settings) = get_configuration()? {
         let acct = get_acct(&settings.acct_path)?;
         let card_ordinals = acct.card_ordinals();
-        let card_details = cards_api::get_cards(&settings.api_cfg, card_ordinals).await?;
+        let (card_details, card_names) = cards_api::get_cards(&settings.api_cfg, card_ordinals).await?;
         let mut album = Vec::new();
         let mut struggle_map: HashMap<u32, sim::acct_info::CardInfo> = HashMap::new();
         for card_inf in acct.cards.iter() {
             struggle_map.insert(card_inf.ordinal, *card_inf);
         }
+
         for (ordinal, jcard) in card_details.iter() {
-            let card_inf = struggle_map.get(ordinal).unwrap();
-            let card = sim::card::Card::instantiate_json(&jcard, card_inf.lb, card_inf.fed);
-            album.push(card);
+            if let Some(card_inf) = struggle_map.get(ordinal) {
+                let card = sim::card::Card::instantiate_json(&jcard, card_inf.lb, card_inf.fed);
+                album.push(card);
+            }
         }
 
         let inventory = acct.accs.iter().map(|info| sim::accessory::Acc::from_info(info)).collect();
@@ -41,12 +45,12 @@ async fn main() -> Result<(), error::Error> {
         let s0 = sim::schedule::Schedule::new_random(&mut rng, glob.album.len(), glob.inventory.len());
         let (_steps, final_sched, energy) = anneal::anneal(&mut rng, &s0, &glob, settings.step_count, 5_000_000.0);
         println!("Voltage est: {:.1}", -energy);
-        display_sched(&glob.album, &glob.inventory, &final_sched);
+        display_sched(&glob.album, &glob.inventory, &final_sched, &card_names);
     }
     Ok(())
 }
 
-fn display_sched(album: &Vec<sim::card::Card>, inv: &Vec<sim::accessory::Acc>, sched: &sim::schedule::Schedule) {
+fn display_sched(album: &Vec<sim::card::Card>, inv: &Vec<sim::accessory::Acc>, sched: &sim::schedule::Schedule, monickers: &BTreeMap<u32, Monicker>) {
     for (i, card_i) in sched.cards.iter().enumerate() {
         if i == 0 {
             println!("-- Green ---------------");
@@ -62,7 +66,7 @@ fn display_sched(album: &Vec<sim::card::Card>, inv: &Vec<sim::accessory::Acc>, s
         };
 
         let card = &album[*card_i];
-        println!(" {} {:<20} (appeal: {})", prefix, card.display_name(), card.appeal);
+        println!(" {} {:>3} {} (appeal: {})", prefix, card.ordinal, monickers.get(&card.ordinal).unwrap(), card.appeal);
 
         if i % 3 == 2 {
             let strat_accs = &sched.accs[i - 2 .. i + 1];
