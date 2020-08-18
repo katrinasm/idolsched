@@ -62,14 +62,5 @@ impl Card {
             level, appeal, stamina, technique,
         }
     }
-
-    pub fn display_name(&self) -> String {
-        let rarity = match self.rarity {
-            Rarity::R => "R",
-            Rarity::Sr => "SR",
-            Rarity::Ur => "UR",
-        };
-        format!("{:>3} {} {:?}", self.ordinal, rarity, self.member)
-    }
 }
 
