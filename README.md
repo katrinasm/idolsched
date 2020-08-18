@@ -7,8 +7,8 @@ but in the future I hope to add new types of schedule featuring swapping and SP 
 # how use
 The program needs two files, `api.json` and `account.json`, to run. You should probably never change `api.json`, it's basically just there because I felt like it would be rude to hardcode another person's website into my program. `account.json` contains info on your cards and accessories.
 Most of the formatting for `account.json` should be obvious from the example file in this repository, except cards, which are formatted like so:
-```{ "id": 100011001, "lb": 0, "fed": false }```
-where `id` is the weird internal ID klab uses (this was a poor choice, and I should replace this with the ordinal, but it is past bedtime), `lb` is the card's limit break, and `fed` should be `true` if you have invested in the card's skill tree, `false` otherwise. Any card you put in your list is assumed to be at the maximum level for its rarity.
+```{ "ordinal": 1, "lb": 0, "fed": false }```
+where `ordinal` is the card's school idol number (you can see this by sorting your card list), `lb` is the card's limit break, and `fed` should be `true` if you have invested in the card's skill tree, `false` otherwise. Any card you put in your list is assumed to be at the maximum level for its rarity.
 
 If your account contains less than 9 cards, it will be padded using the 27 starter Rs, at LB0 and unfed.
 
