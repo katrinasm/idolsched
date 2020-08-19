@@ -27,10 +27,9 @@ impl Schedule {
         assert!(album_size >= 9);
         assert!(inv_size < 0x8000);
         let mut cards = [0; 9];
-        let mut sp3 = [0; 3];
+        let sp3 = [0, 1, 2];
         let mut accs = [AccHandle::empty(); 9];
         let card_dist = Uniform::new(0, album_size);
-        let index_dist = Uniform::new(0, 9);
         let acc_dist = Uniform::new(0, inv_size);
         let mut used_flags = Vec::with_capacity(album_size.max(inv_size));
 
@@ -41,17 +40,6 @@ impl Schedule {
                 v = rng.sample(card_dist);
             }
             cards[i] = v;
-            used_flags[v] = true;
-        }
-
-        used_flags.truncate(0);
-        used_flags.resize(9, false);
-        for i in 0 .. 3 {
-            let mut v = rng.sample(index_dist);
-            while used_flags[v] {
-                v = rng.sample(index_dist);
-            }
-            sp3[i] = v;
             used_flags[v] = true;
         }
 
