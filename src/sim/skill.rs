@@ -1,7 +1,7 @@
 use super::pct;
 use super::basic_data::*;
 use crate::cards_api::json_card::{JsonSkill, JsonCard, SkillData};
-use crate::cards_api::enums::SkillEffectType;
+use crate::cards_api::enums::{SkillEffectType, SkillEffectFinishTimingType};
 
 // target masks are:
 // 63                             32
@@ -53,6 +53,10 @@ pub enum SkillEff {
     Shield(ValueType),
     Damage(ValueType),
     RemoveShield(ValueType),
+    AppealUpAdd(f64, Duration),
+    AppealUp(f64, Duration),
+    AppealUpEx(f64, Duration),
+    TapVoUp(f64, Duration),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -63,6 +67,33 @@ pub enum ValueType {
     CardTechnique(f64),
     StamGauge(f64),
     Cardinal(f64, u64),
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Duration {
+    Permanent,
+    Turn(u32),
+    Immediate,
+    WaveEnd,
+    WaveSuccess,
+    SpExecuteCount(u32),
+    ChangeSquadCount(u32),
+}
+
+impl From<&SkillData> for Duration {
+    fn from(sd: &SkillData) -> Duration {
+        use SkillEffectFinishTimingType as Tt;
+        match sd.6 {
+            Tt::Permanent => Duration::Permanent,
+            Tt::Turn => Duration::Turn(sd.7),
+            Tt::WaveEnd => Duration::WaveEnd,
+            Tt::WaveSuccess => Duration::WaveSuccess,
+            Tt::SpExecuteCount => Duration::SpExecuteCount(sd.7),
+            Tt::ChangeSquadCount => Duration::ChangeSquadCount(sd.7),
+            // unimplemented: Tt::Voltage, Tt::Non
+            _ => Duration::Immediate,
+        }
+    }
 }
 
 impl Skill {
@@ -172,6 +203,14 @@ fn process_effect(sd: &SkillData) -> SkillEff {
         AddVoltageByAppeal       => VoPlus(CardAppeal(pct(effect_value))),
         AddVoltageByStamina      => VoPlus(CardStamina(pct(effect_value))),
         AddVoltageByTechnique    => VoPlus(CardTechnique(pct(effect_value))),
+
+        AddAppealBuff            => match sd.4 {
+            1 => AppealUpAdd(effect_value as f64, Duration::from(sd)),
+            2 => AppealUp(pct(effect_value), Duration::from(sd)),
+            3 => AppealUpEx(pct(effect_value), Duration::from(sd)),
+            _ => Unimplemented,
+        },
+        AddVoltageBuff           => TapVoUp(pct(effect_value), Duration::from(sd)),
 
         SkillEffectType::RemoveShield => SkillEff::RemoveShield(Constant(effect_value as f64)),
         _ => Unimplemented,

@@ -4,7 +4,7 @@ use super::card::Card;
 use super::schedule::Schedule;
 use super::accessory::Acc;
 use super::basic_data::*;
-use super::skill::{Skill, SkillEff, ValueType};
+use super::skill::{Skill, SkillEff, ValueType, Duration};
 
 #[derive(Debug, Default)]
 struct StatList {
@@ -27,10 +27,17 @@ struct StatList {
 
 #[derive(Debug)]
 struct Status {
+    note_pos: usize,
+    note_cnt: usize,
     stam: f64,
     voltage: f64,
     shield: f64,
     strat: usize,
+    buff_appeal_add: Vec<[f64; 9]>,
+    buff_appeal: Vec<[f64; 9]>,
+    buff_appeal_ex: Vec<[f64; 9]>,
+    buff_tapvo: Vec<[f64; 9]>,
+    debuff_appeal: Vec<[f64; 9]>,
 }
 
 const TIMING: f64 = 1.1;
@@ -40,15 +47,33 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
 
     let dpn = song.note_stamina_reduce as f64;
 
-    let mut status = Status { stam: stat_list.max_stam, voltage: 0.0, shield: 0.0, strat: 0 };
+    let note_cnt = song.kt_notes as usize;
 
-    for note_pos in 0 .. song.kt_notes as usize {
-        let card_pos = status.strat * 3 + note_pos % 3;
+    let mut status = Status {
+        stam: stat_list.max_stam,
+        note_pos: 0,
+        note_cnt,
+        voltage: 0.0,
+        shield: 0.0,
+        strat: 0,
+        buff_appeal_add: vec![[0.0; 9]; song.kt_notes as usize],
+        buff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
+        buff_appeal_ex: vec![[0.0; 9]; song.kt_notes as usize],
+        buff_tapvo: vec![[0.0; 9]; song.kt_notes as usize],
+        debuff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
+    };
+
+    while status.note_pos < note_cnt {
+        let card_pos = status.strat * 3 + status.note_pos % 3;
         proc_skill(&mut status, &stat_list, &stat_list.tap_skill[card_pos], card_pos);
         let mut volts = appeal(&stat_list, card_pos);
+        volts += status.buff_appeal_add[status.note_pos][card_pos];
+        volts *= 1.0 + status.buff_appeal[status.note_pos][card_pos] - status.debuff_appeal[status.note_pos][card_pos];
+        volts *= 1.0 + status.buff_appeal_ex[status.note_pos][card_pos];
         volts += volts * crit_rate(&stat_list, card_pos) * crit_power(&stat_list, card_pos);
         volts *= TIMING;
-        volts *= combo_mod(note_pos);
+        volts *= combo_mod(status.note_pos);
+        volts *= 1.0 + status.buff_tapvo[status.note_pos][card_pos];
         volts *= stat_list.mod_vo[status.strat];
         volts *= stat_list.att_mod[card_pos];
         volts *= stam_mod(status.stam, stat_list.max_stam);
@@ -64,6 +89,8 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
             // before it finds one that actually survives
             return status.voltage / 10_000.0;
         }
+
+        status.note_pos += 1;
     }
     status.voltage
 }
@@ -80,6 +107,47 @@ fn proc_skill(status: &mut Status, stat_list: &StatList, skill: &Skill, card_pos
         SkillEff::VoPlus(v) => status.voltage +=
             stat_list.cap_skill[card_pos]
             .min(stat_list.mod_vo[status.strat] * p * get_val(&stat_list, v, card_pos)),
+        SkillEff::AppealUpAdd(v, dur) => {
+            let deltas = make_deltas(stat_list, skill, p * v);
+            for_duration(status, dur, |status, i| add9(&mut status.buff_appeal_add[i], &deltas));
+        },
+        SkillEff::AppealUp(v, dur) => {
+            let deltas = make_deltas(stat_list, skill, p * v);
+            for_duration(status, dur, |status, i| add9(&mut status.buff_appeal[i], &deltas));
+        },
+        SkillEff::AppealUpEx(v, dur) => {
+            let deltas = make_deltas(stat_list, skill, p * v);
+            for_duration(status, dur, |status, i| add9(&mut status.buff_appeal_ex[i], &deltas));
+        },
+        SkillEff::TapVoUp(v, dur) => {
+            let deltas = make_deltas(stat_list, skill, p * v);
+            for_duration(status, dur, |status, i| add9(&mut status.buff_tapvo[i], &deltas));
+        },
+        _ => {},
+    }
+}
+
+fn make_deltas(stat_list: &StatList, skill: &Skill, delta: f64) -> [f64; 9] {
+    let mut deltas = [delta; 9];
+    for i in 0 .. 9 {
+        if stat_list.skill_mask[i] & skill.target_mask == 0 {
+            deltas[i] = 0.0;
+        }
+    }
+    deltas
+}
+
+fn add9(dst: &mut [f64; 9], src: &[f64; 9]) {
+    for i in 0 .. 9 {
+        dst[i] += src[i];
+    }
+}
+
+fn for_duration<F: Fn(&mut Status, usize)>(status: &mut Status, dur: Duration, f: F) {
+    use Duration::*;
+    match dur {
+        Permanent => for i in status.note_pos .. status.note_cnt { f(status, i) },
+        Turn(n) => for i in status.note_pos .. status.note_cnt.min(status.note_pos + n as usize) { f(status, i) },
         _ => {},
     }
 }
