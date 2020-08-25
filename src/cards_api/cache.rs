@@ -1,3 +1,4 @@
+#![allow(dead_code)] // rustc spuriously considers this dead bc of #[cfg]s
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use super::{Error, Cfg};

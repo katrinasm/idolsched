@@ -43,6 +43,8 @@ pub enum Idol {
     Shioriko = 210,
 }
 use Idol::*;
+
+#[allow(dead_code)] // rustc spuriously considers this dead bc of #[cfg]s
 pub const ALL_IDOLS: &[Idol] = &[
     Honoka, Eli, Kotori, Umi, Rin, Maki, Nozomi, Hanayo, Nico,
     Chika, Riko, Kanan, Dia, You, Yohane, Hanamaru, Mari, Ruby,

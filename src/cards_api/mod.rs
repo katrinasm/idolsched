@@ -4,11 +4,13 @@ pub mod error;
 mod skill_enums;
 mod wave_enums;
 mod misc_enums;
+#[cfg(feature="cli")]
 mod cache;
 
 pub use api_cfg::Cfg;
 pub use error::Error;
 
+#[cfg(feature="cli")]
 use std::collections::{HashMap, BTreeMap};
 
 pub mod enums {
@@ -36,6 +38,8 @@ impl std::fmt::Display for Monicker {
     }
 }
 
+#[cfg(feature="cli")]
+#[allow(dead_code)] // rustc spuriously considers this dead bc of #[cfg]s
 pub async fn get_cards(cfg: &Cfg, ordinal_list: Vec<u32>) -> Result<(BTreeMap<u32, json_card::JsonCard>, BTreeMap<u32, Monicker>), Error> {
     let mut cachedata = cache::load_cache(cfg)?;
     let mut output_cards = BTreeMap::new();
@@ -94,6 +98,8 @@ pub async fn get_cards(cfg: &Cfg, ordinal_list: Vec<u32>) -> Result<(BTreeMap<u3
     Ok((output_cards, output_names))
 }
 
+#[cfg(feature="cli")]
+#[allow(dead_code)] // rustc spuriously considers this dead bc of #[cfg]s
 fn ordinal_list_name(ordinal_list: &Vec<u32>) -> String {
     let mut s = String::with_capacity(10 * ordinal_list.len() + 4);
     for i in 0 .. ordinal_list.len() {
