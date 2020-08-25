@@ -46,7 +46,7 @@ use Idol::*;
 pub const ALL_IDOLS: &[Idol] = &[
     Honoka, Eli, Kotori, Umi, Rin, Maki, Nozomi, Hanayo, Nico,
     Chika, Riko, Kanan, Dia, You, Yohane, Hanamaru, Mari, Ruby,
-    Ayumu, Kasumi, Shizuku, Karin, Ai, Kanata, Setsuna, Emma, Rina
+    Ayumu, Kasumi, Shizuku, Karin, Ai, Kanata, Setsuna, Emma, Rina, Shioriko
 ];
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize_repr, Deserialize_repr)]
