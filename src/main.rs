@@ -5,6 +5,7 @@ mod anneal;
 mod error;
 
 use std::collections::{HashMap, BTreeMap};
+
 use rand::SeedableRng;
 use rand::rngs::SmallRng;
 
@@ -74,7 +75,7 @@ fn display_sched(album: &Vec<sim::card::Card>, inv: &Vec<sim::accessory::Acc>, s
         };
 
         let card = &album[*card_i];
-        println!(" {} {:>3} {} (appeal: {})", prefix, card.ordinal, monickers.get(&card.ordinal).unwrap(), card.appeal);
+        println!(" {} {:>3} {}", prefix, card.ordinal, monickers.get(&card.ordinal).unwrap());
 
         if i % 3 == 2 {
             let strat_accs = &sched.accs[i - 2 .. i + 1];
