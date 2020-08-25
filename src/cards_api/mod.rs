@@ -42,7 +42,7 @@ pub async fn get_cards(cfg: &Cfg, ordinal_list: Vec<u32>) -> Result<(BTreeMap<u3
     let mut output_names = BTreeMap::new();
 
     let max_ordinal = ordinal_list.iter().cloned().max().unwrap_or(0);
-    let mut fetch_list: Vec<u32> = (1 .. max_ordinal).collect();
+    let mut fetch_list: Vec<u32> = (1 ..= max_ordinal).collect();
 
     fetch_list.retain(|ordinal| if let Some(card_json) = cachedata.cards.get(&ordinal) {
         output_cards.insert(*ordinal, card_json.clone());
