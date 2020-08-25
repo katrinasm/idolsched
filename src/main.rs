@@ -14,7 +14,7 @@ pub use error::Error;
 
 // pretty sure there is a way to make Cargo give you this,
 // not that it matters
-const VERSION: &'static str = "experimental 2020-08-19";
+const VERSION: &'static str = "experimental 2020-08-25";
 
 use std::path::PathBuf;
 
