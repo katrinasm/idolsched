@@ -66,10 +66,7 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
     while status.note_pos < note_cnt {
         let card_pos = status.strat * 3 + status.note_pos % 3;
         proc_skill(&mut status, &stat_list, &stat_list.tap_skill[card_pos], card_pos);
-        let mut volts = appeal(&stat_list, card_pos);
-        volts += status.buff_appeal_add[status.note_pos][card_pos];
-        volts *= 1.0 + status.buff_appeal[status.note_pos][card_pos] - status.debuff_appeal[status.note_pos][card_pos];
-        volts *= 1.0 + status.buff_appeal_ex[status.note_pos][card_pos];
+        let mut volts = appeal(&stat_list, &status, card_pos);
         volts += volts * crit_rate(&stat_list, card_pos) * crit_power(&stat_list, card_pos);
         volts *= TIMING;
         volts *= combo_mod(status.note_pos);
@@ -99,14 +96,14 @@ fn proc_skill(status: &mut Status, stat_list: &StatList, skill: &Skill, card_pos
     let p = skill.prob;
     match skill.eff {
         SkillEff::Heal(v) => status.stam =
-            stat_list.max_stam.min(status.stam + p * get_val(&stat_list, v, card_pos) * stat_list.att_mod[card_pos]),
+            stat_list.max_stam.min(status.stam + p * get_val(&stat_list, &status, v, card_pos) * stat_list.att_mod[card_pos]),
         SkillEff::Shield(v) => status.shield =
-            stat_list.max_stam.min(status.shield + p * get_val(&stat_list, v, card_pos) * stat_list.att_mod[card_pos]),
+            stat_list.max_stam.min(status.shield + p * get_val(&stat_list, &status, v, card_pos) * stat_list.att_mod[card_pos]),
         SkillEff::RemoveShield(v) => status.shield =
-            (0.0f64).max(status.shield - p * get_val(&stat_list, v, card_pos)),
+            (0.0f64).max(status.shield - p * get_val(&stat_list, &status, v, card_pos)),
         SkillEff::VoPlus(v) => status.voltage +=
             stat_list.cap_skill[card_pos]
-            .min(stat_list.mod_vo[status.strat] * p * get_val(&stat_list, v, card_pos)),
+            .min(stat_list.mod_vo[status.strat] * p * get_val(&stat_list, &status, v, card_pos)),
         SkillEff::AppealUpAdd(v, dur) => {
             let deltas = make_deltas(stat_list, skill, p * v);
             for_duration(status, dur, |status, i| add9(&mut status.buff_appeal_add[i], &deltas));
@@ -261,19 +258,21 @@ fn do_passive(mod_array: &mut [f64; 9], mask_list: &[u64; 9], target_mask: u64, 
     }
 }
 
-fn get_val(stat_list: &StatList, v: ValueType, pos: usize) -> f64 {
+fn get_val(stat_list: &StatList, status: &Status, v: ValueType, pos: usize) -> f64 {
     use ValueType::*;
     match v {
         Constant(n) => n,
-        CardAppeal(p) => p * appeal(stat_list, pos),
+        CardAppeal(p) => p * appeal(stat_list, status, pos),
         CardStamina(p) => p * stat_list.stamina[pos],
         CardTechnique(p) => p * stat_list.technique[pos],
         _ => 0.0,
     }
 }
 
-fn appeal(stat_list: &StatList, pos: usize) -> f64 {
-    stat_list.appeal[pos]
+fn appeal(stat_list: &StatList, status: &Status, pos: usize) -> f64 {
+    (stat_list.appeal[pos] + status.buff_appeal_add[status.note_pos][pos])
+    * (1.0 + status.buff_appeal[status.note_pos][pos] - status.debuff_appeal[status.note_pos][pos])
+    * (1.0 + status.buff_appeal_ex[status.note_pos][pos])
 }
 
 fn crit_rate(stat_list: &StatList, pos: usize) -> f64 {
