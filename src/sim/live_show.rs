@@ -103,7 +103,7 @@ fn proc_skill(status: &mut Status, stat_list: &StatList, skill: &Skill, card_pos
             (0.0f64).max(status.shield - p * get_val(&stat_list, &status, v, card_pos)),
         SkillEff::VoPlus(v) => status.voltage +=
             stat_list.cap_skill[card_pos]
-            .min(stat_list.mod_vo[status.strat] * p * get_val(&stat_list, &status, v, card_pos)),
+            .min(stat_list.mod_vo[status.strat] * p * get_val(&stat_list, &status, v, card_pos) * stat_list.att_mod[card_pos]),
         SkillEff::AppealUpAdd(v, dur) => {
             let deltas = make_deltas(stat_list, skill, p * v);
             for_duration(status, dur, |status, i| add9(&mut status.buff_appeal_add[i], &deltas));
