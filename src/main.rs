@@ -51,7 +51,7 @@ async fn main() -> Result<(), error::Error> {
         let glob = sim::PlayGlob { album, inventory, song };
         let mut rng = SmallRng::from_entropy();
         let s0 = sim::schedule::Schedule::new_random(&mut rng, glob.album.len(), glob.inventory.len());
-        let (_steps, final_sched, energy) = anneal::anneal(&mut rng, &s0, &glob, settings.step_count, 5_000_000.0);
+        let (_steps, final_sched, energy) = anneal::anneal(&mut rng, &s0, &glob, settings.step_count, 10_000.0);
         println!("Voltage est: {:.1}", -energy);
         display_sched(&glob.album, &glob.inventory, &final_sched, &card_names);
     }
