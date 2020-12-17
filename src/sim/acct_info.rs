@@ -14,6 +14,7 @@ impl AcctInfo {
         if self.cards.len() < 9 {
             self.add_r1s()
         }
+        self.pad_accs();
     }
 
     fn add_r1s(&mut self) {
@@ -29,6 +30,13 @@ impl AcctInfo {
                 }
             }
             self.cards.push(CardInfo { ordinal, lb: 0, fed: false })
+        }
+    }
+
+    fn pad_accs(&mut self) {
+        let needed = (9usize).saturating_sub(self.accs.len());
+        for _ in 0 .. needed {
+            self.accs.push(FILLER_ACC.clone());
         }
     }
 
@@ -76,6 +84,7 @@ pub struct AccInfo {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum AccKind {
+    Empty,
     Brooch, Keychain,
     Bracelet, Hairpin,
     Necklace, Earring,
@@ -83,3 +92,13 @@ pub enum AccKind {
     Wristband, Towel,
     Bangle, Choker, Belt,
 }
+
+const FILLER_ACC: AccInfo = AccInfo {
+    attribute: Attribute::Neutral,
+    kind: AccKind::Empty,
+    rarity: Rarity::R,
+    lb: 0,
+    lv: 1,
+    sl: 1,
+};
+

@@ -1,5 +1,5 @@
 use super::pct;
-use super::song::Song;
+use crate::mapdb::Song;
 use super::card::Card;
 use super::schedule::Schedule;
 use super::accessory::Acc;
@@ -47,15 +47,13 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
 
     let dpn = song.note_stamina_reduce as f64;
 
-    let note_cnt = song.kt_notes as usize;
-
     let mut status = Status {
         stam: stat_list.max_stam,
         note_pos: 0,
-        note_cnt,
+        note_cnt: song.kt_notes,
         voltage: 0.0,
         shield: 0.0,
-        strat: 0,
+        strat: 1,
         buff_appeal_add: vec![[0.0; 9]; song.kt_notes as usize],
         buff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
         buff_appeal_ex: vec![[0.0; 9]; song.kt_notes as usize],
@@ -63,7 +61,7 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
         debuff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
     };
 
-    while status.note_pos < note_cnt {
+    while status.note_pos < status.note_cnt {
         let card_pos = status.strat * 3 + status.note_pos % 3;
         proc_skill(&mut status, &stat_list, &stat_list.tap_skill[card_pos], card_pos);
         let mut volts = appeal(&stat_list, &status, card_pos);
@@ -229,8 +227,8 @@ fn make_stat_list(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &
     for strat_pos in 0..3 {
         let strat_i = 3 * strat_pos;
         let strat_accs = &sched.accs[strat_i .. strat_i + 3];
-        for &acc_han in strat_accs.iter() {
-            let acc = if let Some(i) = acc_han.to_index() { &inventory[i] } else { continue };
+        for &acc_i in strat_accs.iter() {
+            let acc = &inventory[acc_i];
             for card_pos in strat_i .. strat_i + 3 {
                 if att[card_pos] == acc.attribute {
                     stat_list.appeal[card_pos] += acc.appeal;

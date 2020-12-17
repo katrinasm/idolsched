@@ -54,13 +54,13 @@ pub const ALL_IDOLS: &[Idol] = &[
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
 pub enum Attribute {
-    Neutral = 0, // this is just a guess tbh
     Smile = 1,
     Pure = 2,
     Cool = 3,
     Active = 4,
     Natural = 5,
     Elegant = 6,
+    Neutral = 9, // why
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize_repr, Deserialize_repr)]

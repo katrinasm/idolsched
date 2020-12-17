@@ -27,12 +27,20 @@ impl Acc {
     pub fn name(&self) -> String {
         format!("{:?} {:?}", self.attribute, self.kind)
     }
+
+    pub fn is_empty(&self) -> bool {
+        match self.kind {
+            AccKind::Empty => true,
+            _ => false,
+        }
+    }
 }
 
 fn stats(info: &AccInfo) -> (f64, f64, f64) {
     let lv_i = info.lv.max(5) as usize - 1;
 
     let table: &[(f64, f64, f64)] = match (info.kind, info.rarity) {
+        (Empty, _) => return (0.0, 0.0, 0.0),
         (Bangle, _) | (Belt, _) | (Choker, _) => &tables::DLP_STATS,
         (_, Rarity::R) => &tables::CMN_STATS_R,
         (_, Rarity::Sr) => &tables::CMN_STATS_S,

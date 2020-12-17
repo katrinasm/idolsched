@@ -3,14 +3,12 @@ pub mod acct_info;
 pub mod card;
 pub mod accessory;
 pub mod schedule;
-pub mod song;
 pub mod skill;
-mod acc_handle;
 mod live_show;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PlayGlob {
-    pub song: song::Song,
+    pub song: crate::mapdb::Song,
     pub album: Vec<card::Card>,
     pub inventory: Vec<accessory::Acc>,
 }

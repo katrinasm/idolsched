@@ -3,6 +3,7 @@ mod state;
 mod sim;
 mod anneal;
 mod error;
+mod mapdb;
 
 use std::collections::{HashMap, BTreeMap};
 
@@ -18,8 +19,6 @@ pub use error::Error;
 const VERSION: &'static str = "experimental 2020-08-25";
 
 use std::path::PathBuf;
-
-use sim::basic_data::Attribute;
 
 // a lot of async code rn that really doesn't need to be async that badly.
 // it will remain async for now since it is not really hurting anything
@@ -43,11 +42,10 @@ async fn main() -> Result<(), error::Error> {
         }
 
         let inventory = acct.accs.iter().map(|info| sim::accessory::Acc::from_info(info)).collect();
-        let song = if let Some(default_attribute) = settings.att_override {
-            println!("Attribute override: {:?}", default_attribute);
-            sim::song::Song {default_attribute, .. sim::song::TEST_SONG}
+        let song = if let Some(map_id) = settings.map_override {
+            mapdb::fetch_song(map_id)?
         } else {
-            sim::song::TEST_SONG.clone()
+            mapdb::fetch_song(1_0_015_30_1)?
         };
         let glob = sim::PlayGlob { album, inventory, song };
         let mut rng = SmallRng::from_entropy();
@@ -75,13 +73,14 @@ fn display_sched(album: &Vec<sim::card::Card>, inv: &Vec<sim::accessory::Acc>, s
         };
 
         let card = &album[*card_i];
-        println!(" {} {:>3} {}", prefix, card.ordinal, monickers.get(&card.ordinal).unwrap());
+        println!(" {} {:>3} {} ({})", prefix, card.ordinal, monickers.get(&card.ordinal).unwrap(), card_i);
 
         if i % 3 == 2 {
             let strat_accs = &sched.accs[i - 2 .. i + 1];
-            for acc_han in strat_accs.iter() {
-                if let Some(acc_i) = acc_han.to_index() {
-                    print!(" | {}", inv[acc_i].name());
+            for &acc_i in strat_accs.iter() {
+                let acc = &inv[acc_i];
+                if !acc.is_empty() {
+                    print!(" | {}", acc.name());
                 }
             }
             println!("");
@@ -94,7 +93,7 @@ struct RunSettings {
     step_count: u32,
     acct_path: PathBuf,
     api_cfg: cards_api::Cfg,
-    att_override: Option<Attribute>,
+    map_override: Option<u32>,
 }
 
 // this function (as well as get_cfg) blocks on I/O bc we can't even start other I/O
@@ -118,7 +117,7 @@ fn get_configuration() -> Result<Option<RunSettings>, error::Error> {
         defaults to 'account.json' if unspecified.",
         "FILE"
     );
-    opts.optopt("c", "attribute",
+    opts.optopt("m", "beatmap",
         "attribute override. if absent, the song's default attribute is used; if present,\n\
         attribute is replaced with 0123456 = XSPCANE,\n\
         where X is neutral, and SPCANE are the six main attributes. e.g.:\n\
@@ -139,11 +138,7 @@ fn get_configuration() -> Result<Option<RunSettings>, error::Error> {
         return Ok(None);
     }
 
-    let att_override = if let Some(s) = matches.opt_str("attribute") {
-        serde_json::from_str(&s).unwrap()
-    } else {
-        None
-    };
+    let map_override = matches.opt_str("beatmap").map(|s| s.parse().unwrap());
 
     let cfg_path = matches.opt_str("api-cfg").unwrap_or_else(|| "api.json".to_string());
     let api_cfg = get_cfg(&cfg_path)?;
@@ -155,7 +150,7 @@ fn get_configuration() -> Result<Option<RunSettings>, error::Error> {
         Err(e) => return Err(error::Error::Etc(Box::new(e))),
     };
 
-    Ok(Some(RunSettings { step_count, acct_path, api_cfg, att_override }))
+    Ok(Some(RunSettings { step_count, acct_path, api_cfg, map_override }))
 }
 
 fn get_cfg(path: &str) -> Result<cards_api::Cfg, error::Error> {
