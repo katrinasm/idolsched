@@ -53,7 +53,7 @@ pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedul
         note_cnt: song.kt_notes,
         voltage: 0.0,
         shield: 0.0,
-        strat: 1,
+        strat: 0,
         buff_appeal_add: vec![[0.0; 9]; song.kt_notes as usize],
         buff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
         buff_appeal_ex: vec![[0.0; 9]; song.kt_notes as usize],

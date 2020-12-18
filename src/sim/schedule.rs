@@ -6,9 +6,9 @@ use rand::seq::SliceRandom;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Schedule {
-    pub cards: [usize; 9], // album indexes; RRRGGGBBB, same as acc screen in-game
+    pub cards: [usize; 9], // album indexes; GGGBBBRRR
     pub sp3: [usize; 3], // indexes into `cards`; center, left, right
-    pub accs: [usize; 9], // inventory indexes; RRRGGGBBB
+    pub accs: [usize; 9], // inventory indexes; GGGBBBRRR
 }
 
 impl Default for Schedule {
