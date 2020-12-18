@@ -1,4 +1,3 @@
-use std::collections::HashMap as Map;
 use std::hash::Hash;
 use crate::state::SearchState;
 use rand::Rng;
@@ -11,14 +10,9 @@ pub fn anneal<St: SearchState + Hash + std::fmt::Debug, R: Rng + ?Sized>(rng: &m
     let mut s = origin.clone();
     let mut se = s.energy(glob);
     let (mut best, mut best_e) = (s.clone(), se);
-    let mut previous_values: Map<St, f64> = Map::new();
-    let mut cache_hits = 0;
-    let mut cache_tries = 0;
     let one_percent = steps / 100;
     let mut countdown = 0;
     let mut percent = 0;
-
-    previous_values.insert(s.clone(), se);
 
     while k < k_max {
         if countdown == 0 {
@@ -38,16 +32,7 @@ pub fn anneal<St: SearchState + Hash + std::fmt::Debug, R: Rng + ?Sized>(rng: &m
         }
 
         let t = random_succ(rng, &s, glob);
-
-        cache_tries += 1;
-        let te = if let Some(known) = previous_values.get(&t) {
-            cache_hits += 1;
-            *known
-        } else {
-            let new = t.energy(glob);
-            previous_values.insert(t.clone(), new);
-            new
-        };
+        let te = t.energy(glob);
 
         let pt = p(se, te, temp).min(1.0);
         if rng.gen_bool(pt) {
@@ -55,11 +40,6 @@ pub fn anneal<St: SearchState + Hash + std::fmt::Debug, R: Rng + ?Sized>(rng: &m
             se = te;
         }
     }
-
-    println!("state cache: {} entries, {:.3}% hit rate",
-        previous_values.len(),
-        (cache_hits as f64 / cache_tries as f64) * 100.0
-    );
 
     (k, best, best_e)
 }
