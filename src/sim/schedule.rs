@@ -1,5 +1,6 @@
 use crate::state::SearchState;
 use super::PlayGlob;
+use super::live_show::Status;
 use rand::Rng;
 use rand::distributions::Uniform;
 use rand::seq::SliceRandom;
@@ -186,9 +187,10 @@ impl Iterator for ScheduleIterator {
 
 impl SearchState for Schedule {
     type Glob = PlayGlob;
+    type Buf = Status;
     type Iter = ScheduleIterator;
-    fn energy(&self, glob: &PlayGlob) -> f64 {
-        -glob.est_voltage(self)
+    fn energy(&self, glob: &PlayGlob, buf: &mut Status) -> f64 {
+        -glob.est_voltage(self, buf)
     }
 
     fn successors(&self, glob: &PlayGlob) -> ScheduleIterator {

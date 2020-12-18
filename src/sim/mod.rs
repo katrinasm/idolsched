@@ -14,8 +14,8 @@ pub struct PlayGlob {
 }
 
 impl PlayGlob {
-    pub fn est_voltage(&self, sched: &schedule::Schedule) -> f64 {
-        live_show::run(&self.song, &self.album, &self.inventory, &sched)
+    pub fn est_voltage(&self, sched: &schedule::Schedule, status: &mut live_show::Status) -> f64 {
+        live_show::run(&self.song, &self.album, &self.inventory, sched, status)
     }
 }
 

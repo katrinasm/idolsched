@@ -1,5 +1,5 @@
 use std::hash::Hash;
-use crate::state::SearchState;
+use crate::state::{SearchState, ReusableBuffer};
 use rand::Rng;
 use rand::seq::SliceRandom;
 use std::io::Write;
@@ -7,8 +7,9 @@ use std::io::Write;
 pub fn anneal<St: SearchState + Hash + std::fmt::Debug, R: Rng + ?Sized>(rng: &mut R, origin: &St, glob: &St::Glob, steps: u32, t0: f64) -> (f64, St, f64) {
     let k_max = steps as f64;
     let mut k = 0.0;
+    let mut buf = St::Buf::create();
     let mut s = origin.clone();
-    let mut se = s.energy(glob);
+    let mut se = s.energy(glob, &mut buf);
     let (mut best, mut best_e) = (s.clone(), se);
     let one_percent = steps / 100;
     let mut countdown = 0;
@@ -32,7 +33,8 @@ pub fn anneal<St: SearchState + Hash + std::fmt::Debug, R: Rng + ?Sized>(rng: &m
         }
 
         let t = random_succ(rng, &s, glob);
-        let te = t.energy(glob);
+        buf.refresh();
+        let te = t.energy(glob, &mut buf);
 
         let pt = p(se, te, temp).min(1.0);
         if rng.gen_bool(pt) {

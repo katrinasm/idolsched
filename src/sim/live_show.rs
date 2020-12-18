@@ -1,5 +1,6 @@
-use super::pct;
 use crate::mapdb::Song;
+use crate::state::ReusableBuffer;
+use super::pct;
 use super::card::Card;
 use super::schedule::Schedule;
 use super::accessory::Acc;
@@ -26,7 +27,7 @@ struct StatList {
 }
 
 #[derive(Debug)]
-struct Status {
+pub struct Status {
     note_pos: usize,
     note_cnt: usize,
     stam: f64,
@@ -40,30 +41,59 @@ struct Status {
     debuff_appeal: Vec<[f64; 9]>,
 }
 
+impl ReusableBuffer for Status {
+    fn create() -> Status {
+        Status {
+            stam: 0.0,
+            note_pos: 0,
+            note_cnt: 0,
+            voltage: 0.0,
+            shield: 0.0,
+            strat: 0,
+            buff_appeal_add: Vec::new(),
+            buff_appeal: Vec::new(),
+            buff_appeal_ex: Vec::new(),
+            buff_tapvo: Vec::new(),
+            debuff_appeal: Vec::new(),
+        }
+    }
+
+    fn refresh(&mut self) {
+        self.stam = 0.0;
+        self.note_pos = 0;
+        self.voltage = 0.0;
+        self.shield = 0.0;
+        self.strat = 0;
+        self.buff_appeal_add.clear();
+        self.buff_appeal.clear();
+        self.buff_appeal_ex.clear();
+        self.buff_tapvo.clear();
+        self.debuff_appeal.clear();
+    }
+}
+
 const TIMING: f64 = 1.1;
 
-pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedule) -> f64 {
+pub fn run(song: &Song, album: &Vec<Card>, inventory: &Vec<Acc>, sched: &Schedule, status: &mut Status) -> f64 {
     let stat_list = make_stat_list(song, album, inventory, sched);
 
     let dpn = song.note_stamina_reduce as f64;
 
-    let mut status = Status {
-        stam: stat_list.max_stam,
-        note_pos: 0,
-        note_cnt: song.kt_notes,
-        voltage: 0.0,
-        shield: 0.0,
-        strat: 0,
-        buff_appeal_add: vec![[0.0; 9]; song.kt_notes as usize],
-        buff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
-        buff_appeal_ex: vec![[0.0; 9]; song.kt_notes as usize],
-        buff_tapvo: vec![[0.0; 9]; song.kt_notes as usize],
-        debuff_appeal: vec![[0.0; 9]; song.kt_notes as usize],
-    };
+    status.stam = stat_list.max_stam;
+    status.note_pos = 0;
+    status.note_cnt = song.kt_notes;
+    status.voltage = 0.0;
+    status.shield = 0.0;
+    status.strat = 0;
+    status.buff_appeal_add.resize(song.kt_notes as usize, [0.0; 9]);
+    status.buff_appeal.resize(song.kt_notes as usize, [0.0; 9]);
+    status.buff_appeal_ex.resize(song.kt_notes as usize, [0.0; 9]);
+    status.buff_tapvo.resize(song.kt_notes as usize, [0.0; 9]);
+    status.debuff_appeal.resize(song.kt_notes as usize, [0.0; 9]);
 
     while status.note_pos < status.note_cnt {
         let card_pos = status.strat * 3 + status.note_pos % 3;
-        proc_skill(&mut status, &stat_list, &stat_list.tap_skill[card_pos], card_pos);
+        proc_skill(status, &stat_list, &stat_list.tap_skill[card_pos], card_pos);
         let mut volts = appeal(&stat_list, &status, card_pos);
         volts += volts * crit_rate(&stat_list, card_pos) * crit_power(&stat_list, card_pos);
         volts *= TIMING;
