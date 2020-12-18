@@ -61,9 +61,6 @@ impl Schedule {
     }
 }
 
-// this whole class could definitely be implemented better than it is,
-// the current code kind of grew by accretion, but it's not very important
-// so it will rot for now
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct ScheduleIterator {
     album_size: usize,
@@ -71,10 +68,34 @@ pub struct ScheduleIterator {
     cards: [usize; 9],
     accs: [usize; 9],
     sp3: [usize; 3],
-    slot_green: usize,
-    slot_cards: usize,
-    slot_accs: usize,
     step: usize,
+}
+
+impl ScheduleIterator {
+    pub fn from_schedule(sched: &Schedule, album_size: usize, inv_size: usize)
+    -> ScheduleIterator {
+        ScheduleIterator {
+            album_size,
+            inv_size,
+            cards: sched.cards.clone(),
+            accs: sched.accs.clone(),
+            sp3: sched.sp3.clone(),
+            step: 0,
+        }
+    }
+}
+
+impl Default for ScheduleIterator {
+    fn default() -> ScheduleIterator {
+        ScheduleIterator {
+            album_size: 50,
+            inv_size: 20,
+            cards: [0,1,2,3,4,5,6,7,8],
+            accs: [0,1,2,3,4,5,6,7,8],
+            sp3: [0,1,2],
+            step: 0,
+        }
+    }
 }
 
 impl Iterator for ScheduleIterator {
@@ -85,62 +106,81 @@ impl Iterator for ScheduleIterator {
         let card_replacements = 9 * nonteam_cards;
         let nonteam_accs = self.inv_size - 9;
         let acc_replacements = 9 * nonteam_accs;
-        let succs = green_swaps + card_replacements + acc_replacements;
-        (0, Some(succs))
+        let possible_succs = green_swaps + card_replacements + acc_replacements;
+        (0, Some(possible_succs - self.step))
     }
 
     fn next(&mut self) -> Option<Schedule> {
         use std::mem::swap;
 
         let mut out_sched = Schedule { sp3: self.sp3, accs: self.accs, cards: self.cards };
+        out_sched.sp3[0] = self.step;
 
-        while self.slot_green < 3 {
-            if self.step < 6 {
-                {
-                    let (green_strat, other_strats) = out_sched.cards.split_at_mut(3);
-                    swap(&mut green_strat[self.slot_green], &mut other_strats[self.step]);
-                }
-                self.step += 1;
-                return Some(out_sched);
-            } else {
-                self.slot_green += 1;
-                self.step = 0;
-            }
-        }
+        let green_swaps = 3 * 6; // 3 cards in green, 6 to swap them with
+        let nonteam_cards = self.album_size - 9;
+        let card_replacements = 9 * nonteam_cards;
+        let nonteam_accs = self.inv_size - 9;
+        let acc_replacements = 9 * nonteam_accs;
 
-        while self.slot_cards < 9 {
-            if self.step < self.album_size {
-                let n = self.album_size.saturating_sub(self.step);
-                for i in 0 .. n {
-                    let cand_i = self.step + i;
-                    if self.cards.iter().all(|curr_i| *curr_i != cand_i) {
-                        self.step += 1 + i;
-                        out_sched.cards[self.slot_cards] = cand_i;
-                        return Some(out_sched);
+        let last_green = green_swaps;
+        let last_card = last_green + card_replacements;
+        let last_acc = last_card + acc_replacements;
+
+        if self.step < last_green {
+            let slot_green = self.step / 6;
+            let slot_other = self.step % 6;
+
+            let (green_strat, other_strats) = out_sched.cards.split_at_mut(3);
+            swap(&mut green_strat[slot_green], &mut other_strats[slot_other]);
+            
+            self.step += 1;
+            return Some(out_sched);
+        } else if self.step < last_card {
+            let substep = self.step - last_green;
+            let slot = substep / nonteam_cards;
+            let candidates_needed = substep % nonteam_cards + 1;
+            let mut cand_i = 0;
+            let mut valid_cands = 0;
+            while valid_cands < candidates_needed {
+                if self.cards.iter().any(|curr_i| *curr_i == cand_i) {
+                    cand_i += 1;
+                } else {
+                    valid_cands += 1;
+                    if valid_cands < candidates_needed {
+                        cand_i += 1;
                     }
                 }
             }
-            self.slot_cards += 1;
-            self.step = 0;
-        }
-
-        while self.slot_accs < 9 {
-            if self.step < self.inv_size {
-                let n = self.inv_size.saturating_sub(self.step);
-                for i in 0 .. n {
-                    let cand_i = self.step + i;
-                    if self.accs.iter().all(|curr_i| *curr_i != cand_i) {
-                        self.step += 1 + i;
-                        out_sched.accs[self.slot_accs] = cand_i;
-                        return Some(out_sched);
+            out_sched.cards[slot] = cand_i;
+            self.step += 1;
+            return Some(out_sched);
+        } else if self.step < last_acc {
+            let substep = self.step - last_card;
+            let slot = substep / nonteam_accs;
+            let candidates_needed = substep % nonteam_accs + 1;
+            let mut cand_i = 0;
+            let mut valid_cands = 0;
+            while valid_cands < candidates_needed {
+                if self.accs.iter().any(|curr_i| *curr_i == cand_i) {
+                    cand_i += 1;
+                } else {
+                    valid_cands += 1;
+                    if valid_cands < candidates_needed {
+                        cand_i += 1;
                     }
                 }
             }
-            self.slot_accs += 1;
-            self.step = 0;
+            out_sched.accs[slot] = cand_i;
+            self.step += 1;
+            return Some(out_sched);
+        } else {
+            None
         }
+    }
 
-        None
+    fn nth(&mut self, n: usize) -> Option<Schedule> {
+        self.step += n;
+        self.next()
     }
 }
 
@@ -152,16 +192,6 @@ impl SearchState for Schedule {
     }
 
     fn successors(&self, glob: &PlayGlob) -> ScheduleIterator {
-        ScheduleIterator {
-            album_size: glob.album.len(),
-            inv_size: glob.inventory.len(),
-            cards: self.cards.clone(),
-            accs: self.accs.clone(),
-            sp3: self.sp3,
-            slot_green: 0,
-            slot_cards: 0,
-            slot_accs: 0,
-            step: 0,
-        }
+        ScheduleIterator::from_schedule(self, glob.album.len(), glob.inventory.len())
     }
 }
