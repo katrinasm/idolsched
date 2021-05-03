@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>About Idolsched</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <h1>Idolsched</h1>
+    <p>
+      Idolsched is a teambuilder for SIFAS.
+    </p><p>
+      Teams are currently optimized for unattended autoplay (as if you selected autoplay and put your phone down).
+      This means the solver doesn't account for SP activations and never swaps strategies.
+      As a result, it undervalues certain cards and accessories. Additional modes are planned to support other play styles.
+    </p><p>
+      However, the resulting teams generally work fine in most of the game's songs,
+      so if you just need a team that will help you survive something, it is probably good enough.
+    </p><p>
+      For now the most important thing to know is probably that it is missing a lot of features (there are just <i>so many things</i> in this game).
+      This is why voltage estimates tend to be <i>very</i> low compared to actual in-game voltage,
+      and also causes the teambuilder to undervalue certain cards.
+    </p><p>
+      The biggest problems are in songs like Ketsui no Hikari that have unusual sources of damage,
+      since many are not accounted for; right now, idolsched will probably give you a team with no healer or shielder.
+    </p>
+    <h1>Miscellaneous notes</h1>
+    <p>
+      The step count setting corresponds roughly to the number of teams idolsched will test.
+      A higher stepcount leads to better results on average, but takes longer to run.
+      The algorithm tends to "settle in" after a while,
+      so step counts past 10,000 or so will generally just waste time trying very similar teams unless you have <i>a lot</i> of cards.
+    </p><p>
+      The algorithm is randomized, so pressing "Run" again will usually give you a slightly different team.
+    </p><p>
+      The solver is weirdly bad at figuring out where to put accessories (I don't understand exactly why), so don't take its accessory advice too seriously,
+      but it is a good idea to add your accessories so it doesn't underestimate your stats too much.
+    </p><p>
+      You can hold Shift and click in the album editor to fast-cycle cards (missing -> idolized -> MLB -> missing).
+    </p><p>
+      I do happen to be aware that the site is mad ugly and intend to slap some CSS on it at some point,
+      but there is much to be done on more critical features.
+    </p>
+    <h1>Acknowledgements</h1>
+    <p>
+      Aside from the obvious fact that this site is designed for and uses data and assets from KLab's
+      game <a href="https://play.google.com/store/apps/details?id=com.klab.lovelive.allstars.global&hl=en_US&gl=US">Love Live: School Idol Festival: ALL STARS</a>,
+      idolsched is made using data from <a href="https://allstars.kirara.ca/">Kirara</a>
+      and <a href="https://suyo.be/sifas/mapdb/">Suyobe's SIFAS MapDB</a>.
+    </p><p>
+      Additionally, idolsched relies on formulas and information discovered by OhkokuKishi, Reikyu, and other members of SIFcord.
+    </p>
+    <h1>Source Code</h1>
+      <a href="https://github.com/katrinasm/idolsched">https://github.com/katrinasm/idolsched</a><br>
+      <p>Yes I am bad about licensing, I apologize, I need to go through and check my dependencies' licenses and stuff.</p>
+  </body>
+</html>

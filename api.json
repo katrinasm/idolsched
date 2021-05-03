@@ -1,6 +1,0 @@
-{
-    "cache_path": "cardcache.json",
-	"provider": "https://allstars.kirara.ca/api/private/cards/",
-	"language": null,
-	"timeout": 10
-}

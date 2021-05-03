@@ -1,0 +1,14 @@
+[package]
+name = "idolsched"
+version = "0.1.0"
+authors = ["katrina"]
+edition = "2018"
+
+[dependencies]
+card_consumer = { path = "../card_consumer" }
+local_search = { path = "../local_search" }
+sifas_data = { path = "../sifas_data" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_repr = "0.1"
+rand = { version = "0.7.3", features = ["small_rng"] }

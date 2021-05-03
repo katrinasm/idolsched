@@ -1,0 +1,60 @@
+.with-sidebar {
+  overflow: hidden;
+}
+
+.with-sidebar > * {
+  display: flex;
+  flex-wrap: wrap;
+  margin: calc(20 / 2 * -1);
+}
+
+.with-sidebar > * > * {
+  margin: calc(20 / 2);
+  flex-grow: 1;
+}
+
+.with-sidebar > * > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-width: calc(50% - 20);
+}
+
+.not-sidebar {
+    padding: 20px;
+}
+
+.card_table {
+    border-collapse: collapse;
+    border: 1px solid black;
+    table-layout: fixed;
+}
+
+.card_table td {
+    border: 1px solid black;
+    width: 100px;
+}
+
+.strat_r {
+    background-color: #fdd;
+    color: black;
+}
+
+.strat_g {
+    background-color: #dfd;
+    color: black;
+}
+
+.strat_b {
+    background-color: #ddf;
+    color: black;
+}
+
+.card-container {
+    padding: 0;
+    border-collapse: collapse;
+}
+
+.card-container td {
+    padding: 0;
+    border-collapse: collapse;
+}
