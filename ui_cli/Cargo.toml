@@ -9,7 +9,7 @@ rand = { version = "0.7.3", features = ["small_rng"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_repr = "0.1"
-tokio = { version = "0.2", features = ["macros"] }
+tokio = { version = "1.18", features = ["macros"] }
 getopts = "0.2"
 card_consumer = { path = "../card_consumer", features = ["reqwest"] }
 local_search = { path = "../local_search" }
